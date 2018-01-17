@@ -8,7 +8,8 @@ const SCOPES = ['https://www.googleapis.com/auth/analytics.manage.users.readonly
   'https://www.googleapis.com/auth/analytics.readonly'];
 const TOKEN_DIR = './';
 const TOKEN_PATH = TOKEN_DIR + 'token.json';
-const ACCOUNT_ID = '';
+const ACCOUNT = require('./config');
+const ACCOUNT_ID = ACCOUNT.accountId;
 
 const USER_EMAIL = ''; // what user to add
 const PERMISSIONS = ['READ_AND_ANALYZE']; // what permissions to give

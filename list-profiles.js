@@ -3,11 +3,12 @@ var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 
+const ACCOUNT = require('./config');
+const ACCOUNT_ID = ACCOUNT.accountId;
 const SCOPES = ['https://www.googleapis.com/auth/analytics.manage.users.readonly',
   'https://www.googleapis.com/auth/analytics.readonly'];
 const TOKEN_DIR = './';
 const TOKEN_PATH = TOKEN_DIR + 'token.json';
-const ACCOUNT_ID = '';
 
 // Load client secrets from a local file.
 fs.readFile('./client_secrets.json', function processClientSecrets(err, content) {
@@ -101,7 +102,7 @@ function storeToken(token) {
  */
 
 let webProfiles = [];
-console.log('View ID;Property ID;Internal Property ID;Name;Currency;URL;Type');
+console.log('View ID\tAccount ID\tProperty ID\tInternal Property ID\tName\tCurrency\tURL\tType');
 
 function listWebProfiles(auth) {
   var service = google.analytics('v3');
@@ -121,7 +122,6 @@ function listWebProfiles(auth) {
     if (sites.length == 0) {
       console.log('No sites found.');
     } else {
-      console.log('profiles:');
       for (var i = 0; i < sites.length; i++) {
         var site = sites[i];
         // console.log("Site ID: %s", site.id);
@@ -131,8 +131,16 @@ function listWebProfiles(auth) {
         // console.log("-------");
 
         // for csv
-        console.log("%s;%s;%s;%s;%s;%s;%s", site.id, site.accountId, site.internalWebPropertyId, site.name, site.currency,
-          site.websiteUrl, site.type);
+        console.log("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", 
+          site.id, 
+          site.accountId, 
+          site.webPropertyId, 
+          site.internalWebPropertyId, 
+          site.name, 
+          site.currency,
+          site.websiteUrl, 
+          site.type
+        );
         // console.log(site);
         // webProfiles.push(site.id);
         // console.log("%s;%s;%s;%s;%s", site.accountId, site.defaultProfileId, site.id, site.websiteUrl, site.name);

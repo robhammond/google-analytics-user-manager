@@ -7,7 +7,8 @@ const SCOPES = ['https://www.googleapis.com/auth/analytics.manage.users.readonly
   'https://www.googleapis.com/auth/analytics.readonly'];
 const TOKEN_DIR = './';
 const TOKEN_PATH = TOKEN_DIR + 'token.json';
-const ACCOUNT_ID = '';
+const ACCOUNT = require('./config');
+const ACCOUNT_ID = ACCOUNT.accountId;
 
 // Load client secrets from a local file.
 fs.readFile('./client_secrets.json', function processClientSecrets(err, content) {

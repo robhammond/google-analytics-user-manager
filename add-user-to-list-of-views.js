@@ -4,11 +4,22 @@ var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 
 const SCOPES = ['https://www.googleapis.com/auth/analytics.manage.users.readonly',
+  'https://www.googleapis.com/auth/analytics.manage.users',
   'https://www.googleapis.com/auth/analytics.readonly'];
 const TOKEN_DIR = './';
 const TOKEN_PATH = TOKEN_DIR + 'token.json';
 const ACCOUNT = require('./config');
 const ACCOUNT_ID = ACCOUNT.accountId;
+
+const USER_EMAIL = ''; // what user to add
+const PERMISSIONS = ['READ_AND_ANALYZE']; // what permissions to give
+
+const PROPERTY_VIEW_IDS = [
+  {
+    property : 'UA-xxxx-1',
+    view : 12345
+  }
+];
 
 // Load client secrets from a local file.
 fs.readFile('./client_secrets.json', function processClientSecrets(err, content) {
@@ -18,7 +29,7 @@ fs.readFile('./client_secrets.json', function processClientSecrets(err, content)
   }
   // Authorize a client with the loaded credentials, then call the
   // Drive API.
-  authorize(JSON.parse(content), listWebProperties);
+  authorize(JSON.parse(content), addUser);
 });
 
 /**
@@ -96,61 +107,41 @@ function storeToken(token) {
 }
 
 /**
- * Lists the sites verified
+ * insert user
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 
- let webProperties = [];
-
-function listWebProperties(auth) {
-  var service = google.analytics('v3');
-  service.management.webproperties.list({
-    auth: auth,
-    'max-results' : 200,
-    accountId : ACCOUNT_ID,
-    fields : "items,itemsPerPage,totalResults"
-  }, function(err, response) {
-    if (err) {
-      console.log("Error fetching sites: " + err);
-      return;
-    }
-
-    var sites = response.items;
-    console.log("Account ID\tDefault Profile ID\tSite ID\tWebsite URL\tSite Name\tIndustry Vertical\tProfiles");
-    if (sites.length == 0) {
-      console.log('No sites found.');
-    } else {
-      // console.log('Sites:');
-      for (var i = 0; i < sites.length; i++) {
-        var site = sites[i];
-        // console.log("Site ID: %s", site.id);
-        // console.log("Type: %s", site.site.type);
-        // console.log("Identifier: %s", site.site.identifier);
-        // console.log("Owners: %s", site.owners);
-        // console.log("-------");
-
-        // for csv
-        console.log(
-          "%s\t%s\t%s\t%s\t%s\t%s\t%s", 
-          site.accountId,
-          site.defaultProfileId, 
-          site.id,
-          site.websiteUrl,
-          site.name,
-          site.industryVertical,
-          site.profileCount
-        );
-        // console.log(site);
-        // console.log("%s;%s;%s;%s;%s", site.accountId,site.defaultProfileId, site.id, site.websiteUrl, site.name);
-
-        // listWebPropertyUsers(auth, site.id);
-      }
-    }
-  });
+function addUser(auth) {
+  for (let i=0;i<PROPERTY_VIEW_IDS.length;i++) {
+    insertWebProfileUser(auth,PROPERTY_VIEW_IDS[i]);
+  }
 }
-// for (var i = 0; i < webProperties.length; i++) {
-//   listWebPropertyUsers(auth, webProperties[i][id]);
-//   sleep(2000);
-// }
 
+function insertWebProfileUser(auth, ids) {
+  var request_body = {
+    "userRef" : {
+      "email" : USER_EMAIL
+    },
+    "permissions" : {
+      "effective" : PERMISSIONS
+    }
+  };
+  var service = google.analytics('v3');
+  service.management.profileUserLinks.insert({
+    auth: auth,
+    accountId : ACCOUNT_ID,
+    webPropertyId : ids.property,
+    profileId : ids.view,
+    // fields : "entity,permissions"
+  }, request_body);
+  // , function(err, response) {
+  //   if (err) {
+  //     console.log("Error inserting users: " + err);
+  //     return;
+  //   }
+
+  //   console.log(response);
+
+  // });
+}
